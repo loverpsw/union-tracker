@@ -336,12 +336,22 @@ async function load() {
   /* merge */
   const map = {};
   SEED.forEach(r => { map[r.date] = { ...r, _meta: null }; });
+function metaMatchesDate(metaStr, recordDate) {
+    if (!metaStr) return false;
+    if (metaStr.includes('-')) return metaStr.startsWith(recordDate);
+    const m = metaStr.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+    if (!m) return false;
+    const d = `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+    return d === recordDate;
+  }
+
   ghRaw.forEach(r => {
-    map[r.date] = {
-      date: r.date,
-      secu: parseInt(r.secu.count, 10),
-      nseu: parseInt(r.nseu.count, 10),
-      selu: parseInt(r.selu.count, 10),
+    const recDate = r.date;
+    map[recDate] = {
+      date: recDate,
+      secu: metaMatchesDate(r.secu.date, recDate) ? parseInt(r.secu.count, 10) : null,
+      nseu: metaMatchesDate(r.nseu.date, recDate) ? parseInt(r.nseu.count, 10) : null,
+      selu: metaMatchesDate(r.selu.date, recDate) ? parseInt(r.selu.count, 10) : null,
       _meta: { secu: r.secu.date, nseu: r.nseu.date, selu: r.selu.date },
     };
   });
