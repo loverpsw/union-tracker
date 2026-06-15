@@ -59,7 +59,14 @@ async function scrape() {
     history = JSON.parse(fs.readFileSync('data.json', 'utf8'));
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+// 수정 (KST 기준)
+const today = new Date().toLocaleDateString('ko-KR', {
+  timeZone: 'Asia/Seoul',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit'
+}).replace(/\. /g, '-').replace('.', '');
+  
   const idx = history.findIndex(r => r.date === today);
   if (idx === -1) {
     history.push({ date: today, ...result.data });
