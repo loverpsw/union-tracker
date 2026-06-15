@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>삼성전자 노동조합 조합원 현황</title>
+  <style>
+    :root {
+      --bg: #0D1117;
+      --surface: #161B22;
+      --surface-2: #1C2128;
+      --border: #30363D;
+      --text: #E6EDF3;
+      --muted: #7D8590;
+      --pos: #3FB950;
+      --neg: #F85149;
+      --zero: #7D8590;
+      --accent: #58A6FF;
+      --today-bg: rgba(56, 139, 253, 0.06);
+      --today-border: rgba(56, 139, 253, 0.4);
+      --mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      padding: 2.5rem 1.25rem;
+    }
+
+    .wrap { max-width: 1000px; margin: 0 auto; }
+
+    /* ── header ── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .logo-group h1 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .logo-group p {
+      margin-top: 0.25rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .status-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.375rem;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      background: rgba(63, 185, 80, 0.1);
+      border: 1px solid rgba(63, 185, 80, 0.3);
+      border-radius: 20px;
+      padding: 0.25rem 0.625rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--pos);
+    }
+
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--pos);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    #refresh-time {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* ── summary cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+    }
+
+    .card.total {
+      border-color: rgba(88, 166, 255, 0.35);
+    }
+
+    .card-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-value {
+      font-family: var(--mono);
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .card.total .card-value { color: var(--accent); }
+
+    .card-diff {
+      margin-top: 0.375rem;
+      font-size: 0.75rem;
+      font-family: var(--mono);
+    }
+
+    .card-diff.pos { color: var(--pos); }
+    .card-diff.neg { color: var(--neg); }
+    .card-diff.zero { color: var(--muted); }
+
+    /* ── table ── */
+    .table-outer {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .table-scroll { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      white-space: nowrap;
+    }
+
+    thead tr { background: var(--surface-2); }
+
+    thead th {
+      padding: 0.625rem 0.875rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+
+    thead th.date-col { text-align: left; }
+
+    thead .group-header {
+      text-align: center;
+      border-left: 1px solid var(--border);
+      padding: 0.375rem 0.875rem;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    tbody td {
+      padding: 0.5rem 0.875rem;
+      font-family: var(--mono);
+      text-align: right;
+      border-bottom: 1px solid rgba(48, 54, 61, 0.6);
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody td.date-cell {
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: left;
+    }
+
+    tbody td.group-first { border-left: 1px solid var(--border); }
+
+    /* base row */
+    tr.base td.date-cell::after {
+      content: ' [기준]';
+      color: var(--accent);
+      font-size: 0.68rem;
+    }
+
+    /* today row */
+    tr.today {
+      background: var(--today-bg);
+    }
+
+    tr.today td.date-cell {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* change cells */
+    .pos { color: var(--pos); }
+    .neg { color: var(--neg); }
+    .zero { color: var(--muted); }
+    .pending { color: var(--muted); font-family: var(--sans); font-size: 0.72rem; }
+
+    /* ── footer ── */
+    .table-footer {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      padding: 0.625rem 0.875rem;
+      background: var(--surface-2);
+      border-top: 1px solid var(--border);
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .table-footer span { display: flex; align-items: center; gap: 0.375rem; }
+
+    /* ── state messages ── */
+    .msg {
+      padding: 3rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .msg.error { color: var(--neg); }
+
+    /* ── bottom note ── */
+    footer {
+      margin-top: 1.25rem;
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1.5rem 1rem; }
+      header { flex-direction: column; }
+      .status-group { align-items: flex-start; }
+      .card-value { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo-group">
+      <h1>삼성전자 노동조합 조합원 현황</h1>
+      <p>3조합(SECU) · 4조합(NSEU) · 5조합(SELU) — GitHub Actions 자동 수집</p>
+    </div>
+    <div class="status-group">
+      <div class="live-badge"><div class="dot"></div> 30분마다 자동 갱신</div>
+      <div id="refresh-time">로딩 중...</div>
+    </div>
+  </header>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="table-outer">
+    <div class="table-scroll">
+      <div id="table-area"><div class="msg">데이터를 불러오는 중...</div></div>
+    </div>
+    <div class="table-footer" id="table-footer"></div>
+  </div>
+
+  <footer>
+    <a href="https://github.com/loverpsw/union-tracker" target="_blank"
+       style="color: var(--muted); text-decoration: none;">
+      ↗ loverpsw/union-tracker
+    </a>
+  </footer>
+
+</div>
+<script>
+const DATA_URL = 'https://raw.githubusercontent.com/loverpsw/union-tracker/main/data.json';
+
+const SEED = [
+  { date: '2026-06-12', secu: 24495, nseu: 21028, selu: 57030, base: true },
+  { date: '2026-06-13', secu: 24495, nseu: 21028, selu: 56810 },
+  { date: '2026-06-14', secu: 24694, nseu: 21028, selu: 56810 },
+];
+
+const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+function todayKST() {
+  const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+  return [
+    kst.getFullYear(),
+    String(kst.getMonth() + 1).padStart(2, '0'),
+    String(kst.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
+function fmtDateLabel(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dow = DAYS[new Date(y, m - 1, d).getDay()];
+  return `${String(y).slice(2)}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')} (${dow})`;
+}
+
+function comma(n) { return n.toLocaleString('ko-KR'); }
+
+function renderChange(diff, cls) {
+  if (diff === null) return `<span class="pending">-</span>`;
+  if (diff === 0)    return `<span class="zero">0</span>`;
+  if (diff > 0)      return `<span class="pos">${comma(diff)}</span>`;
+  return `<span class="neg">(${comma(Math.abs(diff))})</span>`;
+}
+
+async function load() {
+  let ghRaw = [];
+  try {
+    const res = await fetch(DATA_URL + '?_=' + Date.now());
+    ghRaw = await res.json();
+  } catch (e) {
+    document.getElementById('table-area').innerHTML =
+      `<div class="msg error">데이터 로드 실패: ${e.message}</div>`;
+    return;
+  }
+
+  /* merge */
+  const map = {};
+  SEED.forEach(r => { map[r.date] = { ...r, _meta: null }; });
+  ghRaw.forEach(r => {
+    map[r.date] = {
+      date: r.date,
+      secu: parseInt(r.secu.count, 10),
+      nseu: parseInt(r.nseu.count, 10),
+      selu: parseInt(r.selu.count, 10),
+      _meta: { secu: r.secu.date, nseu: r.nseu.date, selu: r.selu.date },
+    };
+  });
+
+  const today = todayKST();
+  if (!map[today]) map[today] = { date: today, secu: null, nseu: null, selu: null, _meta: null };
+
+  const rows = Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
+
+  /* compute diffs */
+  rows.forEach((r, i) => {
+    if (i === 0) { r._diff = { secu: 0, nseu: 0, selu: 0 }; return; }
+    const p = rows[i - 1];
+    r._diff = {
+      secu: r.secu !== null && p.secu !== null ? r.secu - p.secu : null,
+      nseu: r.nseu !== null && p.nseu !== null ? r.nseu - p.nseu : null,
+      selu: r.selu !== null && p.selu !== null ? r.selu - p.selu : null,
+    };
+  });
+
+  /* summary cards */
+  const latestFull = [...rows].reverse().find(r => r.secu !== null && r.nseu !== null && r.selu !== null);
+  if (latestFull) {
+    const total = latestFull.secu + latestFull.nseu + latestFull.selu;
+    const prevFull = rows.slice(0, rows.indexOf(latestFull)).reverse()
+      .find(r => r.secu !== null && r.nseu !== null && r.selu !== null);
+    const totalDiff = prevFull ? (total - (prevFull.secu + prevFull.nseu + prevFull.selu)) : 0;
+    const diffCls = totalDiff > 0 ? 'pos' : totalDiff < 0 ? 'neg' : 'zero';
+    const diffSign = totalDiff > 0 ? '▲ ' : totalDiff < 0 ? '▼ ' : '';
+    const diffText = totalDiff !== 0
+      ? (totalDiff > 0 ? comma(totalDiff) : `(${comma(Math.abs(totalDiff))})`) : '전일 동일';
+
+    const unionNames = ['3조합 (SECU)', '4조합 (NSEU)', '5조합 (SELU)'];
+    const unionKeys  = ['secu', 'nseu', 'selu'];
+    let cardHtml = `<div class="card total">
+      <div class="card-label">합계</div>
+      <div class="card-value">${comma(total)}</div>
+      <div class="card-diff ${diffCls}">${diffSign}${diffText}</div>
+    </div>`;
+
+    unionKeys.forEach((k, i) => {
+      const v = latestFull[k];
+      const d = latestFull._diff ? latestFull._diff[k] : null;
+      const dc = d > 0 ? 'pos' : d < 0 ? 'neg' : 'zero';
+      const ds = d > 0 ? '▲ ' + comma(d) : d < 0 ? '▼ ' + `(${comma(Math.abs(d))})` : '전일 동일';
+      cardHtml += `<div class="card">
+        <div class="card-label">${unionNames[i]}</div>
+        <div class="card-value">${comma(v)}</div>
+        <div class="card-diff ${dc}">${ds}</div>
+      </div>`;
+    });
+    document.getElementById('cards').innerHTML = cardHtml;
+  }
+
+  /* table */
+  let tableHtml = `<table>
+    <colgroup>
+      <col style="min-width:130px">
+      <col><col style="min-width:72px">
+      <col><col style="min-width:72px">
+      <col><col style="min-width:72px">
+      <col><col style="min-width:72px">
+    </colgroup>
+    <thead>
+      <tr>
+        <th class="date-col" rowspan="2" style="border-right:1px solid var(--border)">일자</th>
+        <th colspan="2" class="group-header">3조합</th>
+        <th colspan="2" class="group-header">4조합</th>
+        <th colspan="2" class="group-header">5조합</th>
+        <th colspan="2" class="group-header">합계</th>
+      </tr>
+      <tr>
+        <th class="group-first">조합원수</th><th>증감</th>
+        <th class="group-first">조합원수</th><th>증감</th>
+        <th class="group-first">조합원수</th><th>증감</th>
+        <th class="group-first">조합원수</th><th>증감</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  rows.forEach(r => {
+    const isToday = r.date === today;
+    const isBase  = !!r.base;
+    const rowCls  = isToday ? 'today' : (isBase ? 'base' : '');
+    const label   = fmtDateLabel(r.date);
+
+    const total = (r.secu !== null && r.nseu !== null && r.selu !== null)
+      ? r.secu + r.nseu + r.selu : null;
+    const totalDiff = r._diff && r._diff.secu !== null && r._diff.nseu !== null && r._diff.selu !== null
+      ? r._diff.secu + r._diff.nseu + r._diff.selu : null;
+
+    const keys = ['secu', 'nseu', 'selu'];
+    let cells = '';
+    keys.forEach(k => {
+      const v = r[k];
+      const d = r._diff ? r._diff[k] : null;
+      const countHtml = v !== null ? comma(v) : `<span class="pending">업데이트중</span>`;
+      cells += `<td class="group-first">${countHtml}</td>`;
+      cells += `<td>${renderChange(d, null)}</td>`;
+    });
+
+    const totalCountHtml = total !== null ? comma(total) : `<span class="pending">업데이트중</span>`;
+    cells += `<td class="group-first">${totalCountHtml}</td>`;
+    cells += `<td>${total !== null ? renderChange(totalDiff, null) : `<span class="pending">-</span>`}</td>`;
+
+    tableHtml += `<tr class="${rowCls}">
+      <td class="date-cell" style="border-right:1px solid var(--border)">${label}</td>
+      ${cells}
+    </tr>`;
+  });
+
+  tableHtml += '</tbody></table>';
+  document.getElementById('table-area').innerHTML = tableHtml;
+
+  /* footer timestamps */
+  const lastMeta = [...rows].reverse().find(r => r._meta)?._meta;
+  if (lastMeta) {
+    document.getElementById('table-footer').innerHTML =
+      `<span>3조합 갱신: ${lastMeta.secu}</span>` +
+      `<span>4조합 갱신: ${lastMeta.nseu}</span>` +
+      `<span>5조합 갱신: ${lastMeta.selu}</span>`;
+  }
+
+  /* refresh timestamp */
+  const now = new Date().toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul', hour12: false,
+    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+  });
+  document.getElementById('refresh-time').textContent = `마지막 조회: ${now}`;
+}
+
+load();
+setInterval(load, 30 * 60 * 1000);
+</script>
+</body>
+</html>
