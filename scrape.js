@@ -26,11 +26,11 @@ async function scrape() {
   try {
     const page = await browser.newPage();
     await page.goto('https://samsunglabor.co.kr', { waitUntil: 'networkidle2', timeout: 30000 });
-    const text = await page.evaluate(() => document.body.innerText);
-    console.log('전삼노 전체 텍스트 앞부분:\n', text.slice(0, 500));
-    const countMatch = text.match(/([\d,]+)명/) ;
-    const dateMatch = text.match(/(\d{4}년\s*\d+월\s*\d+일\s*\d+시)/);
-    console.log('전삼노 매칭:', countMatch?.[1], dateMatch?.[1]);
+    await new Promise(r => setTimeout(r, 3000));
+    const html = await page.content();
+    const countMatch = html.match(/현재 조합원 수\s*([\d,]+)명/);
+    const dateMatch = html.match(/(\d{4}년\s*\d{2}월\s*\d{2}일\s*\d{2}시)\s*기준/);
+    console.log('전삼노 HTML 매칭:', countMatch?.[1], dateMatch?.[1]);
     if (countMatch) result.data.nseu = {
       count: countMatch[1].replace(/,/g, ''),
       date: dateMatch ? dateMatch[1] : null
