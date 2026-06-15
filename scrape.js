@@ -60,12 +60,8 @@ async function scrape() {
   }
 
 // 수정 (KST 기준)
-const today = new Date().toLocaleDateString('ko-KR', {
-  timeZone: 'Asia/Seoul',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit'
-}).replace(/\. /g, '-').replace('.', '');
+const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+const today = `${kst.getFullYear()}-${String(kst.getMonth()+1).padStart(2,'0')}-${String(kst.getDate()).padStart(2,'0')}`;
   
   const idx = history.findIndex(r => r.date === today);
   if (idx === -1) {
