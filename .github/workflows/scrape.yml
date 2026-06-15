@@ -1,0 +1,36 @@
+name: 조합원수 자동 수집
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # 매일 오전 10시 (한국시간 = UTC+9)
+  workflow_dispatch:      # 수동 실행 버튼도 생성
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install puppeteer
+
+      - name: Run scraper
+        run: node scrape.js
+
+      - name: Save result
+        uses: actions/upload-artifact@v4
+        with:
+          name: union-data
+          path: data.json
+
+      - name: Commit data
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data.json
+          git diff --staged --quiet || git commit -m "Update union data $(date +'%Y-%m-%d')"
+          git push
