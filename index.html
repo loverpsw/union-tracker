@@ -418,6 +418,7 @@ function metaMatchesDate(metaStr, recordDate) {
   const rev = [...rows].reverse();
   const unionNames = ['3조합 (SECU)', '4조합 (NSEU)', '5조합 (SELU)'];
   const unionKeys  = ['secu', 'nseu', 'selu'];
+  const unionUrls  = ['https://secunion.co.kr', 'https://samsunglabor.co.kr', 'https://selunion.co.kr'];
 
   const latests = unionKeys.map(k => rev.find(r => r[k] !== null));
   const prevs   = unionKeys.map((k, i) => {
@@ -456,7 +457,10 @@ function metaMatchesDate(metaStr, recordDate) {
     const dc = d > 0 ? 'pos' : d < 0 ? 'neg' : 'zero';
     const ds = d > 0 ? '▲ ' + comma(d) : d < 0 ? '▼ (' + comma(Math.abs(d)) + ')' : '전일 동일';
     cardHtml += `<div class="card">
-      <div class="card-label">${unionNames[i]}</div>
+      <div class="card-label" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>${unionNames[i]}</span>
+        <a href="${unionUrls[i]}" target="_blank" style="font-size:0.65rem;color:var(--accent);text-decoration:none;border:1px solid rgba(88,166,255,0.3);border-radius:4px;padding:2px 6px;white-space:nowrap;">홈페이지 ↗</a>
+      </div>
       <div class="card-value">${comma(v)}</div>
       <div class="card-diff ${dc}">${ds}</div>
     </div>`;
