@@ -2,8 +2,11 @@ name: 조합원수 자동 수집
 
 on:
   schedule:
-    - cron: '0 1 * * *'  # 매일 오전 10시 (한국시간 = UTC+9)
-  workflow_dispatch:      # 수동 실행 버튼도 생성
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   scrape:
@@ -20,12 +23,6 @@ jobs:
 
       - name: Run scraper
         run: node scrape.js
-
-      - name: Save result
-        uses: actions/upload-artifact@v4
-        with:
-          name: union-data
-          path: data.json
 
       - name: Commit data
         run: |
