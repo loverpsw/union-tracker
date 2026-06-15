@@ -291,7 +291,49 @@
 const DATA_URL = 'https://raw.githubusercontent.com/loverpsw/union-tracker/main/data.json';
 
 const SEED = [
-  { date: '2026-06-12', secu: 24495, nseu: 21028, selu: 57030, base: true },
+  { date: '2026-05-01', secu: 2359,  nseu: 17789, selu: 75170 },
+  { date: '2026-05-02', secu: 2359,  nseu: 17789, selu: 74750 },
+  { date: '2026-05-03', secu: 2359,  nseu: 17789, selu: 74750 },
+  { date: '2026-05-04', secu: 2359,  nseu: 17721, selu: 74373 },
+  { date: '2026-05-05', secu: 2359,  nseu: 17721, selu: 74373 },
+  { date: '2026-05-06', secu: 2360,  nseu: 17655, selu: 74215 },
+  { date: '2026-05-07', secu: 2360,  nseu: 16498, selu: 73430 },
+  { date: '2026-05-08', secu: 2360,  nseu: 15920, selu: 73306 },
+  { date: '2026-05-09', secu: 2360,  nseu: 15920, selu: 73030 },
+  { date: '2026-05-10', secu: 2360,  nseu: 15920, selu: 72930 },
+  { date: '2026-05-11', secu: 2360,  nseu: 15462, selu: 72875 },
+  { date: '2026-05-12', secu: 2360,  nseu: 15462, selu: 72750 },
+  { date: '2026-05-13', secu: 2360,  nseu: 15462, selu: 72725 },
+  { date: '2026-05-14', secu: 2438,  nseu: 15462, selu: 72405 },
+  { date: '2026-05-15', secu: 2602,  nseu: 15266, selu: 71750 },
+  { date: '2026-05-16', secu: 2602,  nseu: 15266, selu: 71765 },
+  { date: '2026-05-17', secu: 2602,  nseu: 15266, selu: 71625 },
+  { date: '2026-05-18', secu: 2602,  nseu: 15182, selu: 71375 },
+  { date: '2026-05-19', secu: 3019,  nseu: 15123, selu: 70965 },
+  { date: '2026-05-20', secu: 3409,  nseu: 15123, selu: 70985 },
+  { date: '2026-05-21', secu: 11172, nseu: 16286, selu: 70850 },
+  { date: '2026-05-22', secu: 12893, nseu: 19957, selu: 71075 },
+  { date: '2026-05-23', secu: 13133, nseu: 19957, selu: 71235 },
+  { date: '2026-05-24', secu: 13133, nseu: 19957, selu: 71235 },
+  { date: '2026-05-25', secu: 13133, nseu: 19957, selu: 71235 },
+  { date: '2026-05-26', secu: 14204, nseu: 20306, selu: 71155 },
+  { date: '2026-05-27', secu: 14453, nseu: 20306, selu: 71040 },
+  { date: '2026-05-28', secu: 16290, nseu: 20600, selu: 69935 },
+  { date: '2026-05-29', secu: 18101, nseu: 20604, selu: 67860 },
+  { date: '2026-05-30', secu: 18101, nseu: 20604, selu: 67860 },
+  { date: '2026-05-31', secu: 18101, nseu: 20604, selu: 67860 },
+  { date: '2026-06-01', secu: 19601, nseu: 20758, selu: 66150 },
+  { date: '2026-06-02', secu: 20368, nseu: 20909, selu: 65870 },
+  { date: '2026-06-03', secu: 20368, nseu: 20909, selu: 65290 },
+  { date: '2026-06-04', secu: 21015, nseu: 20968, selu: 58270 },
+  { date: '2026-06-05', secu: 22222, nseu: 20996, selu: 58470 },
+  { date: '2026-06-06', secu: 22222, nseu: 20996, selu: 57870 },
+  { date: '2026-06-07', secu: 22222, nseu: 20996, selu: 57870 },
+  { date: '2026-06-08', secu: 22680, nseu: 20996, selu: 57870 },
+  { date: '2026-06-09', secu: 23406, nseu: 21531, selu: 57480 },
+  { date: '2026-06-10', secu: 23902, nseu: 21059, selu: 57280 },
+  { date: '2026-06-11', secu: 24301, nseu: 21023, selu: 57185 },
+  { date: '2026-06-12', secu: 24495, nseu: 21028, selu: 57030 },
   { date: '2026-06-13', secu: 24495, nseu: 21028, selu: 56810 },
   { date: '2026-06-14', secu: 24694, nseu: 21028, selu: 56810 },
 ];
@@ -372,39 +414,54 @@ function metaMatchesDate(metaStr, recordDate) {
     };
   });
 
-  /* summary cards */
-  const latestFull = [...rows].reverse().find(r => r.secu !== null && r.nseu !== null && r.selu !== null);
-  if (latestFull) {
-    const total = latestFull.secu + latestFull.nseu + latestFull.selu;
-    const prevFull = rows.slice(0, rows.indexOf(latestFull)).reverse()
-      .find(r => r.secu !== null && r.nseu !== null && r.selu !== null);
-    const totalDiff = prevFull ? (total - (prevFull.secu + prevFull.nseu + prevFull.selu)) : 0;
-    const diffCls = totalDiff > 0 ? 'pos' : totalDiff < 0 ? 'neg' : 'zero';
+  /* summary cards — 각 조합 독립적으로 최신값 사용 */
+  const rev = [...rows].reverse();
+  const unionNames = ['3조합 (SECU)', '4조합 (NSEU)', '5조합 (SELU)'];
+  const unionKeys  = ['secu', 'nseu', 'selu'];
+
+  const latests = unionKeys.map(k => rev.find(r => r[k] !== null));
+  const prevs   = unionKeys.map((k, i) => {
+    const lr = latests[i];
+    if (!lr) return null;
+    return rows.slice(0, rows.indexOf(lr)).reverse().find(r => r[k] !== null);
+  });
+
+  let cardHtml = '';
+
+  /* 합계 카드: 각 조합의 최신값 합산 */
+  const totalVals = latests.map((lr, i) => lr ? lr[unionKeys[i]] : null);
+  if (totalVals.every(v => v !== null)) {
+    const total = totalVals.reduce((a, b) => a + b, 0);
+    const prevTotal = prevs.every(p => p !== null)
+      ? prevs.reduce((a, p, i) => a + p[unionKeys[i]], 0) : null;
+    const totalDiff = prevTotal !== null ? total - prevTotal : 0;
+    const diffCls  = totalDiff > 0 ? 'pos' : totalDiff < 0 ? 'neg' : 'zero';
     const diffSign = totalDiff > 0 ? '▲ ' : totalDiff < 0 ? '▼ ' : '';
     const diffText = totalDiff !== 0
       ? (totalDiff > 0 ? comma(totalDiff) : `(${comma(Math.abs(totalDiff))})`) : '전일 동일';
-
-    const unionNames = ['3조합 (SECU)', '4조합 (NSEU)', '5조합 (SELU)'];
-    const unionKeys  = ['secu', 'nseu', 'selu'];
-    let cardHtml = `<div class="card total">
+    cardHtml += `<div class="card total">
       <div class="card-label">합계</div>
       <div class="card-value">${comma(total)}</div>
       <div class="card-diff ${diffCls}">${diffSign}${diffText}</div>
     </div>`;
-
-    unionKeys.forEach((k, i) => {
-      const v = latestFull[k];
-      const d = latestFull._diff ? latestFull._diff[k] : null;
-      const dc = d > 0 ? 'pos' : d < 0 ? 'neg' : 'zero';
-      const ds = d > 0 ? '▲ ' + comma(d) : d < 0 ? '▼ ' + `(${comma(Math.abs(d))})` : '전일 동일';
-      cardHtml += `<div class="card">
-        <div class="card-label">${unionNames[i]}</div>
-        <div class="card-value">${comma(v)}</div>
-        <div class="card-diff ${dc}">${ds}</div>
-      </div>`;
-    });
-    document.getElementById('cards').innerHTML = cardHtml;
   }
+
+  /* 조합별 카드 */
+  unionKeys.forEach((k, i) => {
+    const lr = latests[i];
+    const pr = prevs[i];
+    if (!lr) return;
+    const v = lr[k];
+    const d = pr ? v - pr[k] : 0;
+    const dc = d > 0 ? 'pos' : d < 0 ? 'neg' : 'zero';
+    const ds = d > 0 ? '▲ ' + comma(d) : d < 0 ? '▼ (' + comma(Math.abs(d)) + ')' : '전일 동일';
+    cardHtml += `<div class="card">
+      <div class="card-label">${unionNames[i]}</div>
+      <div class="card-value">${comma(v)}</div>
+      <div class="card-diff ${dc}">${ds}</div>
+    </div>`;
+  });
+  document.getElementById('cards').innerHTML = cardHtml;
 
   /* table */
   let tableHtml = `<table>
