@@ -28,15 +28,10 @@ async function scrape() {
     await page.goto('https://samsunglabor.co.kr', { waitUntil: 'networkidle2', timeout: 30000 });
     await new Promise(r => setTimeout(r, 3000));
     const html = await page.content();
-    const countMatch = html.match(/현재 조합원 수\s*([\d,]+)명/);
-    const dateMatch = html.match(/(\d{4}년\s*\d{2}월\s*\d{2}일\s*\d{2}시)\s*기준/);
-    console.log('전삼노 HTML 매칭:', countMatch?.[1], dateMatch?.[1]);
-    if (countMatch) result.data.nseu = {
-      count: countMatch[1].replace(/,/g, ''),
-      date: dateMatch ? dateMatch[1] : null
-    };
+    const idx = html.indexOf('조합원 수');
+    console.log('전삼노 조합원 수 주변 HTML:\n', html.slice(idx - 50, idx + 100));
     await page.close();
-  } catch(e) { result.data.nseu = { error: e.message }; }
+  } catch(e) { console.log('전삼노 오류:', e.message); }
 
   // 5조합 SELU
   try {
