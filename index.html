@@ -295,7 +295,94 @@
       z-index: 101;
     }
     #toast.show { opacity: 1; }
+
+    /* ── chart button ── */
+    #chartBtn {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.625rem 1rem;
+      font-size: 0.8rem;
+      font-family: var(--sans);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      z-index: 100;
+    }
+    #chartBtn:hover, #chartBtn.active {
+      background: rgba(88,166,255,0.08);
+      border-color: rgba(88,166,255,0.5);
+      color: var(--accent);
+    }
+
+    /* ── chart modal ── */
+    #chartModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(1,4,9,0.75);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    #chartPanel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 860px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    #chartHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    #chartTabs {
+      display: flex;
+      gap: 0.375rem;
+    }
+    .chart-tab {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-family: var(--sans);
+      padding: 0.375rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chart-tab:hover { border-color: rgba(88,166,255,0.4); color: var(--text); }
+    .chart-tab.active { background: rgba(88,166,255,0.12); border-color: var(--accent); color: var(--accent); }
+    #chartClose {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      padding: 0.25rem 0.625rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    #chartClose:hover { border-color: var(--neg); color: var(--neg); }
+    #chartWrap { position: relative; height: 360px; }
+    @media (max-width: 600px) { #chartWrap { height: 260px; } }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -326,6 +413,30 @@
       ↗ loverpsw/union-tracker
     </a>
   </footer>
+
+  <!-- 그래프 버튼 -->
+  <button id="chartBtn" onclick="toggleChart()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+    조합원 추이
+  </button>
+
+  <!-- 차트 모달 -->
+  <div id="chartModal" onclick="handleModalClick(event)">
+    <div id="chartPanel">
+      <div id="chartHeader">
+        <div id="chartTabs">
+          <button class="chart-tab active" data-tab="all"  onclick="switchTab('all')">전체</button>
+          <button class="chart-tab"        data-tab="secu" onclick="switchTab('secu')">3조합</button>
+          <button class="chart-tab"        data-tab="nseu" onclick="switchTab('nseu')">4조합</button>
+          <button class="chart-tab"        data-tab="selu" onclick="switchTab('selu')">5조합</button>
+        </div>
+        <button id="chartClose" onclick="toggleChart()">✕ 닫기</button>
+      </div>
+      <div id="chartWrap"><canvas id="unionChart"></canvas></div>
+    </div>
+  </div>
 
   <!-- 보고서 추출 버튼 -->
   <button id="reportBtn" onclick="copyReport()" title="보고 양식 복사">
@@ -686,6 +797,103 @@ function copyReport() {
     const toast = document.getElementById('toast');
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2000);
+  });
+}
+
+/* ── chart ── */
+let chartInstance = null;
+let currentTab = 'all';
+
+function toggleChart() {
+  const modal = document.getElementById('chartModal');
+  const btn   = document.getElementById('chartBtn');
+  const open  = modal.style.display === 'flex';
+  if (open) {
+    modal.style.display = 'none';
+    btn.classList.remove('active');
+  } else {
+    modal.style.display = 'flex';
+    btn.classList.add('active');
+    renderChart(currentTab);
+  }
+}
+
+function handleModalClick(e) {
+  if (e.target === document.getElementById('chartModal')) toggleChart();
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.chart-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.tab === tab)
+  );
+  renderChart(tab);
+}
+
+function renderChart(tab) {
+  if (!currentRows.length) return;
+
+  const rows = currentRows.filter(r =>
+    r.secu !== null || r.nseu !== null || r.selu !== null
+  );
+
+  const labels = rows.map(r => {
+    const [, m, d] = r.date.split('-').map(Number);
+    return `${m}/${d}`;
+  });
+
+  const unionCfg = [
+    { key: 'secu', label: '3조합', color: '#58A6FF' },
+    { key: 'nseu', label: '4조합', color: '#3FB950' },
+    { key: 'selu', label: '5조합', color: '#F0883E' },
+  ];
+
+  const shown = tab === 'all' ? unionCfg : unionCfg.filter(u => u.key === tab);
+
+  const datasets = shown.map(u => ({
+    label: u.label,
+    data: rows.map(r => r[u.key]),
+    borderColor: u.color,
+    backgroundColor: u.color + '18',
+    borderWidth: 2,
+    pointRadius: 2,
+    pointHoverRadius: 5,
+    tension: 0.3,
+    spanGaps: true,
+    fill: tab !== 'all',
+  }));
+
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+  const ctx = document.getElementById('unionChart').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: '#E6EDF3', font: { size: 12 }, boxWidth: 12 } },
+        tooltip: {
+          callbacks: {
+            label: c => ` ${c.dataset.label}: ${c.parsed.y != null ? c.parsed.y.toLocaleString('ko-KR') + '명' : '-'}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#7D8590', maxRotation: 45, font: { size: 10 },
+            maxTicksLimit: 20 },
+          grid: { color: '#21262D' }
+        },
+        y: {
+          ticks: { color: '#7D8590', font: { size: 11 },
+            callback: v => v != null ? v.toLocaleString('ko-KR') : '' },
+          grid: { color: '#21262D' }
+        }
+      }
+    }
   });
 }
 
