@@ -1190,14 +1190,23 @@ function renderChart(tab) {
 }
 
 /* ── majority ── */
-function loadMajority() {
-  const saved = localStorage.getItem('majoritySettings');
-  if (saved) {
-    try { return JSON.parse(saved); } catch(e) {}
+const JSONBIN_ID  = '6a31dd91da38895dfeccfa9f';
+const JSONBIN_KEY = '$2a$10$vUbexyDJEztj6GoL.l1IV.yb2V7a92mw1nlUBo.SvHxfzu46LW2Bm';
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
+
+let MAJORITY = { secu: 26000, nseu: null, selu: 64000 };
+
+async function loadMajority() {
+  try {
+    const res = await fetch(JSONBIN_URL + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    const data = await res.json();
+    MAJORITY = data.record;
+  } catch(e) {
+    console.warn('JSONBin 로드 실패, 기본값 사용');
   }
-  return { secu: 26000, nseu: null, selu: 64000 };
 }
-let MAJORITY = loadMajority();
 const MAJ_LABEL = { secu: '3조합 (SECU)', nseu: '4조합 (NSEU)', selu: '5조합 (SELU)' };
 const MAJ_COLOR = { secu: '#58A6FF', nseu: '#3FB950', selu: '#F0883E' };
 
@@ -1215,14 +1224,25 @@ function closeMajSetModal() {
 function handleMajSetBg(e) {
   if (e.target === document.getElementById('majSetModal')) closeMajSetModal();
 }
-function saveMajSettings() {
+async function saveMajSettings() {
   const keys = ['secu', 'nseu', 'selu'];
   keys.forEach(k => {
     const raw = document.getElementById('majInput-' + k).value.replace(/,/g, '').trim();
     const val = parseInt(raw);
     MAJORITY[k] = (!isNaN(val) && val > 0) ? val : null;
   });
-  localStorage.setItem('majoritySettings', JSON.stringify(MAJORITY));
+  try {
+    await fetch(JSONBIN_URL, {
+      method: 'PUT',
+      headers: {
+        'X-Master-Key': JSONBIN_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(MAJORITY)
+    });
+  } catch(e) {
+    console.warn('JSONBin 저장 실패');
+  }
   closeMajSetModal();
   updateMajority();
   if (document.getElementById('chartModal').style.display === 'flex') {
@@ -1278,7 +1298,11 @@ function updateMajority() {
   document.getElementById('majGrid').innerHTML = html;
 }
 
-load();
+async function init() {
+  await loadMajority();
+  await load();
+}
+init();
 setInterval(load, 30 * 60 * 1000);
 </script>
 </body>
