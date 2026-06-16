@@ -501,11 +501,94 @@
     .maj-remain.done  { color: var(--pos); }
     .maj-remain.short { color: #F0883E; }
     .cell-maj { display: inline-block; font-size: 0.58rem; font-weight: 700; background: rgba(63,185,80,0.12); color: var(--pos); border: 1px solid rgba(63,185,80,0.3); border-radius: 3px; padding: 0 3px; margin-left: 4px; vertical-align: middle; }
+
+    /* ── password lock ── */
+    #lockScreen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    #lockScreen.show { display: flex; }
+    .lock-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem 2rem 1.75rem;
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    .lock-icon { font-size: 2rem; }
+    .lock-title { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+    #lockInput {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1.5rem;
+      font-family: var(--mono);
+      letter-spacing: 0.3em;
+      text-align: center;
+      padding: 0.625rem 1rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    #lockInput:focus { border-color: var(--accent); }
+    #lockInput.error { border-color: var(--neg); animation: shake 0.3s ease; }
+    @keyframes shake {
+      0%,100%{ transform:translateX(0) }
+      25%{ transform:translateX(-6px) }
+      75%{ transform:translateX(6px) }
+    }
+    #lockBtn {
+      width: 100%;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      font-family: var(--sans);
+      padding: 0.625rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    #lockBtn:hover { background: #79B8FF; }
+    #lockError {
+      font-size: 0.75rem;
+      color: var(--neg);
+      height: 1rem;
+      text-align: center;
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
-<body>
-<div class="wrap">
+<body style="visibility:hidden">
+
+<!-- 비밀번호 잠금 화면 -->
+<div id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-icon">🔒</div>
+    <div class="lock-title">삼성전자 노동조합 조합원 현황</div>
+    <input id="lockInput" type="password" inputmode="numeric"
+      maxlength="10" placeholder="••••"
+      onkeydown="if(event.key==='Enter') checkPassword()">
+    <div id="lockError"></div>
+    <button id="lockBtn" onclick="checkPassword()">확인</button>
+  </div>
+</div>
+
+<div class="wrap" id="mainContent" style="display:none">
 
   <header>
     <div class="logo-group">
@@ -593,16 +676,45 @@
   </div>
 
   <!-- 보고서 추출 버튼 -->
-  <button id="reportBtn" onclick="copyReport()" title="데이터 추출">
+  <button id="reportBtn" onclick="copyReport()" title="보고 양식 복사">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
     </svg>
-    데이터 추출
+    보고 양식 복사
   </button>
   <div id="toast">클립보드에 복사됐습니다</div>
 
-</div>
+</div><!-- /mainContent -->
 <script>
+/* ── password lock ── */
+(function() {
+  const PW = '3528';
+  if (sessionStorage.getItem('auth') === '1') {
+    document.body.style.visibility = 'visible';
+    document.getElementById('mainContent').style.display = 'block';
+  } else {
+    document.getElementById('lockScreen').classList.add('show');
+    document.body.style.visibility = 'visible';
+    setTimeout(() => document.getElementById('lockInput').focus(), 100);
+  }
+})();
+
+function checkPassword() {
+  const input = document.getElementById('lockInput');
+  const errEl = document.getElementById('lockError');
+  if (input.value === '3528') {
+    sessionStorage.setItem('auth', '1');
+    document.getElementById('lockScreen').classList.remove('show');
+    document.getElementById('mainContent').style.display = 'block';
+    errEl.textContent = '';
+  } else {
+    input.classList.add('error');
+    errEl.textContent = '비밀번호가 올바르지 않습니다.';
+    input.value = '';
+    setTimeout(() => input.classList.remove('error'), 400);
+  }
+}
+
 const DATA_URL = 'https://raw.githubusercontent.com/loverpsw/union-tracker/main/data.json';
 
 const SEED = [
