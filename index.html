@@ -297,9 +297,33 @@
     #toast.show { opacity: 1; }
 
     /* ── chart button ── */
+    #majSetBtn {
+      position: fixed;
+      bottom: 7.5rem;
+      left: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.625rem 1rem;
+      font-size: 0.8rem;
+      font-family: var(--sans);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      z-index: 100;
+    }
+    #majSetBtn:hover {
+      background: rgba(248,81,73,0.06);
+      border-color: rgba(248,81,73,0.4);
+      color: var(--neg);
+    }
     #chartBtn {
       position: fixed;
-      bottom: 1.5rem;
+      bottom: 4.5rem;
       left: 1.5rem;
       display: flex;
       align-items: center;
@@ -321,6 +345,68 @@
       border-color: rgba(88,166,255,0.5);
       color: var(--accent);
     }
+
+    /* ── majority set modal ── */
+    #majSetModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(1,4,9,0.75);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+    #majSetPanel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.125rem;
+    }
+    #majSetPanel h3 { font-size: 0.95rem; font-weight: 600; }
+    #majSetPanel p  { font-size: 0.78rem; color: var(--muted); margin-top: -0.5rem; }
+    .maj-input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+    }
+    .maj-input-row label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+    .maj-input-row input {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: var(--mono);
+      padding: 0.5rem 0.75rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .maj-input-row input:focus { border-color: var(--accent); }
+    .maj-input-row input::placeholder { color: var(--muted); opacity: 0.6; }
+    .maj-set-btns { display: flex; gap: 0.5rem; margin-top: 0.25rem; }
+    .maj-set-btns button {
+      flex: 1;
+      padding: 0.625rem;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-family: var(--sans);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    #majSaveBtn  { background: var(--accent); color: #000; border: none; font-weight: 600; }
+    #majSaveBtn:hover  { background: #79B8FF; }
+    #majCancelBtn { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    #majCancelBtn:hover { border-color: var(--neg); color: var(--neg); }
 
     /* ── chart modal ── */
     #chartModal {
@@ -381,6 +467,40 @@
     #chartClose:hover { border-color: var(--neg); color: var(--neg); }
     #chartWrap { position: relative; height: 360px; }
     @media (max-width: 600px) { #chartWrap { height: 260px; } }
+
+    /* ── majority section ── */
+    .maj-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .maj-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.875rem 1.125rem;
+    }
+    .maj-card.achieved { border-color: rgba(63,185,80,0.4); }
+    .maj-card.lost     { border-color: rgba(248,81,73,0.3); }
+    .maj-card.no-thr   { opacity: 0.55; }
+    .maj-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .maj-union-name { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+    .maj-badge { font-size: 0.63rem; font-weight: 700; border-radius: 20px; padding: 0.15rem 0.5rem; }
+    .maj-badge.achieved { background: rgba(63,185,80,0.15); color: var(--pos); border: 1px solid rgba(63,185,80,0.3); }
+    .maj-badge.lost     { background: rgba(248,81,73,0.1);  color: var(--neg); border: 1px solid rgba(248,81,73,0.25); }
+    .maj-badge.no-thr   { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+    .maj-current { font-size: 1.3rem; font-family: var(--mono); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+    .maj-current.achieved { color: var(--pos); }
+    .maj-current.lost     { color: var(--neg); }
+    .maj-current.no-thr   { color: var(--muted); }
+    .maj-track { height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin-bottom: 0.5rem; }
+    .maj-bar   { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+    .maj-stats { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); font-family: var(--mono); flex-wrap: wrap; gap: 0.25rem; }
+    .maj-remain       { font-weight: 600; color: var(--text); }
+    .maj-remain.done  { color: var(--pos); }
+    .maj-remain.short { color: #F0883E; }
+    .cell-maj { display: inline-block; font-size: 0.58rem; font-weight: 700; background: rgba(63,185,80,0.12); color: var(--pos); border: 1px solid rgba(63,185,80,0.3); border-radius: 3px; padding: 0 3px; margin-left: 4px; vertical-align: middle; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -400,6 +520,8 @@
 
   <div class="cards" id="cards"></div>
 
+  <div class="maj-grid" id="majGrid"></div>
+
   <div class="table-outer">
     <div class="table-scroll">
       <div id="table-area"><div class="msg">데이터를 불러오는 중...</div></div>
@@ -413,6 +535,38 @@
       ↗ loverpsw/union-tracker
     </a>
   </footer>
+
+  <!-- 과반 기준 설정 버튼 -->
+  <button id="majSetBtn" onclick="openMajSetModal()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+    </svg>
+    과반 기준 설정
+  </button>
+
+  <!-- 과반 기준 설정 모달 -->
+  <div id="majSetModal" onclick="handleMajSetBg(event)">
+    <div id="majSetPanel">
+      <h3>⚑ 과반 기준 설정</h3>
+      <p>각 조합의 과반 달성 기준 숫자를 입력하세요. 비워두면 미설정으로 처리됩니다.</p>
+      <div class="maj-input-row">
+        <label>3조합 (SECU) 과반 기준</label>
+        <input id="majInput-secu" type="text" inputmode="numeric" placeholder="예) 26,000">
+      </div>
+      <div class="maj-input-row">
+        <label>4조합 (NSEU) 과반 기준</label>
+        <input id="majInput-nseu" type="text" inputmode="numeric" placeholder="미설정">
+      </div>
+      <div class="maj-input-row">
+        <label>5조합 (SELU) 과반 기준</label>
+        <input id="majInput-selu" type="text" inputmode="numeric" placeholder="예) 64,000">
+      </div>
+      <div class="maj-set-btns">
+        <button id="majCancelBtn" onclick="closeMajSetModal()">취소</button>
+        <button id="majSaveBtn"   onclick="saveMajSettings()">저장</button>
+      </div>
+    </div>
+  </div>
 
   <!-- 그래프 버튼 -->
   <button id="chartBtn" onclick="toggleChart()">
@@ -671,7 +825,12 @@ function metaMatchesDate(metaStr, recordDate) {
     keys.forEach(k => {
       const v = r[k];
       const d = r._diff ? r._diff[k] : null;
-      const countHtml = v !== null ? comma(v) : `<span class="pending">업데이트중</span>`;
+      const majThr   = MAJORITY[k];
+      const isMaj    = majThr !== null && v !== null && v >= majThr;
+      const majBadge = isMaj ? '<span class="cell-maj">과반</span>' : '';
+      const countHtml = v !== null
+        ? `${comma(v)}${majBadge}`
+        : `<span class="pending">업데이트중</span>`;
       cells += `<td class="group-first">${countHtml}</td>`;
       cells += `<td>${renderChange(d, null)}</td>`;
     });
@@ -704,6 +863,7 @@ function metaMatchesDate(metaStr, recordDate) {
     month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
   });
   document.getElementById('refresh-time').textContent = `마지막 조회: ${now}`;
+  updateMajority();
 }
 
 let currentRows = [];
@@ -850,7 +1010,27 @@ function renderChart(tab) {
 
   const shown = tab === 'all' ? unionCfg : unionCfg.filter(u => u.key === tab);
 
-  const datasets = shown.map(u => ({
+  const refLines = [];
+  unionCfg.forEach(u => {
+    const thr = MAJORITY[u.key];
+    if (!thr) return;
+    if (tab !== 'all' && tab !== u.key) return;
+    refLines.push({
+      label: `${u.label} 과반 기준`,
+      data: rows.map(() => thr),
+      borderColor: u.color + '80',
+      backgroundColor: 'transparent',
+      borderWidth: 1.5,
+      borderDash: [6, 4],
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      tension: 0,
+      fill: false,
+      spanGaps: true,
+    });
+  });
+
+  const datasets = [...shown.map(u => ({
     label: u.label,
     data: rows.map(r => r[u.key]),
     borderColor: u.color,
@@ -861,7 +1041,7 @@ function renderChart(tab) {
     tension: 0.3,
     spanGaps: true,
     fill: tab !== 'all',
-  }));
+  })), ...refLines];
 
   if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
 
@@ -895,6 +1075,95 @@ function renderChart(tab) {
       }
     }
   });
+}
+
+/* ── majority ── */
+function loadMajority() {
+  const saved = localStorage.getItem('majoritySettings');
+  if (saved) {
+    try { return JSON.parse(saved); } catch(e) {}
+  }
+  return { secu: 26000, nseu: null, selu: 64000 };
+}
+let MAJORITY = loadMajority();
+const MAJ_LABEL = { secu: '3조합 (SECU)', nseu: '4조합 (NSEU)', selu: '5조합 (SELU)' };
+const MAJ_COLOR = { secu: '#58A6FF', nseu: '#3FB950', selu: '#F0883E' };
+
+function openMajSetModal() {
+  const keys = ['secu', 'nseu', 'selu'];
+  keys.forEach(k => {
+    const el = document.getElementById('majInput-' + k);
+    el.value = MAJORITY[k] !== null ? MAJORITY[k].toLocaleString('ko-KR') : '';
+  });
+  document.getElementById('majSetModal').style.display = 'flex';
+}
+function closeMajSetModal() {
+  document.getElementById('majSetModal').style.display = 'none';
+}
+function handleMajSetBg(e) {
+  if (e.target === document.getElementById('majSetModal')) closeMajSetModal();
+}
+function saveMajSettings() {
+  const keys = ['secu', 'nseu', 'selu'];
+  keys.forEach(k => {
+    const raw = document.getElementById('majInput-' + k).value.replace(/,/g, '').trim();
+    const val = parseInt(raw);
+    MAJORITY[k] = (!isNaN(val) && val > 0) ? val : null;
+  });
+  localStorage.setItem('majoritySettings', JSON.stringify(MAJORITY));
+  closeMajSetModal();
+  updateMajority();
+  if (document.getElementById('chartModal').style.display === 'flex') {
+    renderChart(currentTab);
+  }
+}
+
+function updateMajority() {
+  if (!currentRows.length) return;
+  const keys = ['secu', 'nseu', 'selu'];
+  let html = '';
+  keys.forEach(k => {
+    const thr    = MAJORITY[k];
+    const latest = [...currentRows].reverse().find(r => r[k] !== null);
+    const val    = latest ? latest[k] : null;
+    if (thr === null) {
+      html += `<div class="maj-card no-thr">
+        <div class="maj-card-header">
+          <span class="maj-union-name">${MAJ_LABEL[k]}</span>
+          <span class="maj-badge no-thr">과반 기준 미설정</span>
+        </div>
+        <div class="maj-current no-thr">${val !== null ? val.toLocaleString('ko-KR') + '명' : '—'}</div>
+      </div>`;
+      return;
+    }
+    const achieved = val !== null && val >= thr;
+    const pct      = val !== null ? Math.min(100, Math.round(val / thr * 100)) : 0;
+    const remain   = val !== null ? thr - val : null;
+    const cls      = achieved ? 'achieved' : 'lost';
+    const barColor = achieved ? 'var(--pos)' : pct >= 80 ? '#F0883E' : 'var(--neg)';
+    let remainHtml = '';
+    if (remain !== null) {
+      if (remain <= 0) {
+        remainHtml = `<span class="maj-remain done">+${Math.abs(remain).toLocaleString('ko-KR')}명 초과</span>`;
+      } else {
+        remainHtml = `<span class="maj-remain ${pct >= 80 ? 'short' : ''}">${remain.toLocaleString('ko-KR')}명 부족</span>`;
+      }
+    }
+    html += `<div class="maj-card ${cls}">
+      <div class="maj-card-header">
+        <span class="maj-union-name">${MAJ_LABEL[k]}</span>
+        <span class="maj-badge ${cls}">${achieved ? '과반 달성 ✓' : '과반 미달성'}</span>
+      </div>
+      <div class="maj-current ${cls}">${val !== null ? val.toLocaleString('ko-KR') + '명' : '—'}</div>
+      <div class="maj-track"><div class="maj-bar" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="maj-stats">
+        <span>과반 기준 ${thr.toLocaleString('ko-KR')}명</span>
+        ${remainHtml}
+        <span>${pct}%</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('majGrid').innerHTML = html;
 }
 
 load();
