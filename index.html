@@ -1204,7 +1204,7 @@ async function loadMajority() {
     const data = await res.json();
     MAJORITY = data.record;
   } catch(e) {
-    console.warn('JSONBin 로드 실패, 기본값 사용');
+    console.error('JSONBin 로드 실패:', e);
   }
 }
 const MAJ_LABEL = { secu: '3조합 (SECU)', nseu: '4조합 (NSEU)', selu: '5조합 (SELU)' };
@@ -1225,14 +1225,19 @@ function handleMajSetBg(e) {
   if (e.target === document.getElementById('majSetModal')) closeMajSetModal();
 }
 async function saveMajSettings() {
+  const btn = document.getElementById('majSaveBtn');
+  btn.textContent = '저장 중...';
+  btn.disabled = true;
+
   const keys = ['secu', 'nseu', 'selu'];
   keys.forEach(k => {
     const raw = document.getElementById('majInput-' + k).value.replace(/,/g, '').trim();
     const val = parseInt(raw);
     MAJORITY[k] = (!isNaN(val) && val > 0) ? val : null;
   });
+
   try {
-    await fetch(JSONBIN_URL, {
+    const res = await fetch(JSONBIN_URL, {
       method: 'PUT',
       headers: {
         'X-Master-Key': JSONBIN_KEY,
@@ -1240,14 +1245,28 @@ async function saveMajSettings() {
       },
       body: JSON.stringify(MAJORITY)
     });
+    const data = await res.json();
+    if (!res.ok) {
+      alert('저장 실패: ' + (data.message || res.status) + '\n\n개발자 도구 콘솔에서 오류를 확인해 주세요.');
+      btn.textContent = '저장';
+      btn.disabled = false;
+      return;
+    }
+    closeMajSetModal();
+    updateMajority();
+    if (document.getElementById('chartModal').style.display === 'flex') {
+      renderChart(currentTab);
+    }
+    // 저장 성공 토스트
+    const toast = document.getElementById('toast');
+    toast.textContent = '과반 기준이 저장됐습니다';
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); toast.textContent = '클립보드에 복사됐습니다'; }, 2500);
   } catch(e) {
-    console.warn('JSONBin 저장 실패');
+    alert('저장 실패: ' + e.message);
   }
-  closeMajSetModal();
-  updateMajority();
-  if (document.getElementById('chartModal').style.display === 'flex') {
-    renderChart(currentTab);
-  }
+  btn.textContent = '저장';
+  btn.disabled = false;
 }
 
 function updateMajority() {
