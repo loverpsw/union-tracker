@@ -1190,21 +1190,17 @@ function renderChart(tab) {
 }
 
 /* ── majority ── */
-const JSONBIN_ID  = '6a31dd91da38895dfeccfa9f';
-const JSONBIN_KEY = '$2a$10$vUbexyDJEztj6GoL.l1IV.yb2V7a92mw1nlUBo.SvHxfzu46LW2Bm';
-const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
+const WORKER_URL = 'https://union-settings.loverpsw.workers.dev';
 
 let MAJORITY = { secu: 26000, nseu: null, selu: 64000 };
 
 async function loadMajority() {
   try {
-    const res = await fetch(JSONBIN_URL + '/latest', {
-      headers: { 'X-Master-Key': JSONBIN_KEY }
-    });
+    const res  = await fetch(WORKER_URL);
     const data = await res.json();
-    MAJORITY = data.record;
+    MAJORITY = data;
   } catch(e) {
-    console.error('JSONBin 로드 실패:', e);
+    console.error('설정 로드 실패:', e);
   }
 }
 const MAJ_LABEL = { secu: '3조합 (SECU)', nseu: '4조합 (NSEU)', selu: '5조합 (SELU)' };
@@ -1237,12 +1233,9 @@ async function saveMajSettings() {
   });
 
   try {
-    const res = await fetch(JSONBIN_URL, {
+    const res  = await fetch(WORKER_URL, {
       method: 'PUT',
-      headers: {
-        'X-Master-Key': JSONBIN_KEY,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(MAJORITY)
     });
     const data = await res.json();
