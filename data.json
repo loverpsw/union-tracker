@@ -78,15 +78,14 @@
     "date": "2026-06-20",
     "secu": {
       "count": "26518",
-      "date": "2026-06-20 07:26"
+      "date": "2026-06-20 08:00"
     },
     "nseu": {
       "count": "21384",
       "date": null
     },
     "selu": {
-      "count": "56350",
-      "date": "2026년 6월 18일 13시"
+      "error": "Navigation timeout of 30000 ms exceeded"
     }
   }
 ]
