@@ -29,7 +29,7 @@ async function scrape() {
     await new Promise(r => setTimeout(r, 3000));
     const html = await page.content();
     const countMatch = html.match(/현재 조합원 수\s*<span[^>]*>([\d,]+)<\/span>/);
-    const dateMatch = html.match(/(\d{4}년\s*\d{2}월\s*\d{2}일\s*\d{2}시)\s*기준/);
+    const dateMatch = html.match(/(\d{4}년\s*\d{1,2}월\s*\d{1,2}일\s*\d{1,2}시)\s*기준/);
     if (countMatch) result.data.nseu = {
       count: countMatch[1].replace(/,/g, ''),
       date: dateMatch ? dateMatch[1] : null
