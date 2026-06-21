@@ -829,6 +829,26 @@ function metaMatchesDate(metaStr, recordDate) {
   if (!map[today]) map[today] = { date: today, secu: null, nseu: null, selu: null, _meta: null };
 
   const rows = Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
+
+  /* 이후 업데이트된 값이 있으면 null 칸을 직전 값으로 채움 */
+  ['secu', 'nseu', 'selu'].forEach(k => {
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i][k] !== null) continue;
+      // 직전 마지막 값
+      let prevVal = null;
+      for (let j = i - 1; j >= 0; j--) {
+        if (rows[j][k] !== null) { prevVal = rows[j][k]; break; }
+      }
+      // 이후 업데이트 여부
+      const hasLater = rows.slice(i + 1).some(r => r[k] !== null);
+      if (hasLater && prevVal !== null) {
+        rows[i][k] = prevVal;
+        rows[i]._filled = rows[i]._filled || {};
+        rows[i]._filled[k] = true;
+      }
+    }
+  });
+
   currentRows = rows;
 
   /* compute diffs */
