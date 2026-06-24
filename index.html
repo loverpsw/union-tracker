@@ -572,6 +572,7 @@
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body style="visibility:hidden">
 
@@ -604,6 +605,13 @@
   <div class="cards" id="cards"></div>
 
   <div class="maj-grid" id="majGrid"></div>
+
+  <div style="display:flex;justify-content:flex-end;margin-bottom:0.5rem;">
+    <button onclick="downloadExcel()" title="엑셀 다운로드" style="display:flex;align-items:center;gap:0.375rem;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--muted);font-size:0.75rem;font-family:var(--sans);padding:0.375rem 0.75rem;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='#3FB950';this.style.color='#3FB950'" onmouseout="this.style.borderColor='';this.style.color=''">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      엑셀 다운로드
+    </button>
+  </div>
 
   <div class="table-outer">
     <div class="table-scroll">
@@ -1328,6 +1336,27 @@ function updateMajority() {
     </div>`;
   });
   document.getElementById('majGrid').innerHTML = html;
+}
+
+function downloadExcel() {
+  if (!currentRows.length) return;
+  const HDR = ['일자','3조합','증감','4조합','증감','5조합','증감','합계','증감'];
+  const keys = ['secu','nseu','selu'];
+  const DOW = ['일','월','화','수','목','금','토'];
+
+  const dataRows = currentRows.map(r => {
+    const [y,m,d] = r.date.split('-').map(Number);
+    const label = `${String(y).slice(2)}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')} (${DOW[new Date(y,m-1,d).getDay()]})`;
+    const total = keys.every(k => r[k] !== null) ? keys.reduce((s,k) => s+r[k], 0) : null;
+    const tDiff = r._diff && keys.every(k => r._diff[k] !== null) ? keys.reduce((s,k) => s+r._diff[k], 0) : null;
+    return [label, r.secu, r._diff?.secu??null, r.nseu, r._diff?.nseu??null, r.selu, r._diff?.selu??null, total, tDiff];
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet([HDR, ...dataRows]);
+  ws['!cols'] = [{wch:16},{wch:10},{wch:8},{wch:10},{wch:8},{wch:10},{wch:8},{wch:10},{wch:8}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '조합원현황');
+  XLSX.writeFile(wb, `조합원현황_${todayKST().replace(/-/g,'')}.xlsx`);
 }
 
 async function init() {
