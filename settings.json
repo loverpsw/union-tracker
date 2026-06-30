@@ -1,7 +1,7 @@
 {
-  "secu": 26000,
+  "secu": null,
   "nseu": null,
-  "selu": 64000,
+  "selu": null,
   "dx": 50732,
   "ds": 78701,
   "total": 129433
