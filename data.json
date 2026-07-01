@@ -261,12 +261,10 @@
       "date": "2026-07-01 23:43"
     },
     "nseu": {
-      "count": "21973",
-      "date": "2026년 07월 01일 14시"
+      "error": "Navigation timeout of 30000 ms exceeded"
     },
     "selu": {
-      "count": "54850",
-      "date": "2026년 7월 1일 12시"
+      "error": "Navigation timeout of 30000 ms exceeded"
     }
   }
 ]
