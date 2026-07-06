@@ -317,7 +317,8 @@
   {
     "date": "2026-07-06",
     "secu": {
-      "error": "Execution context was destroyed, most likely because of a navigation."
+      "count": "27773",
+      "date": "2026-07-06 08:52"
     },
     "nseu": {
       "count": "22198",
