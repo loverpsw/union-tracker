@@ -316,9 +316,6 @@
   },
   {
     "date": "2026-07-06",
-    "secu": {
-      "error": "Execution context was destroyed, most likely because of a navigation."
-    },
     "nseu": {
       "count": "22198",
       "date": "2026년 07월 06일 10시"
