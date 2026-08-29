@@ -1131,12 +1131,10 @@
       "date": "2026-08-29 11:57"
     },
     "nseu": {
-      "count": "24581",
-      "date": "2026년 08월 27일 09시"
+      "error": "Navigation timeout of 30000 ms exceeded"
     },
     "selu": {
-      "count": "53297",
-      "date": "2026년 8월 29일 12시"
+      "error": "Navigation timeout of 30000 ms exceeded"
     }
   }
 ]
