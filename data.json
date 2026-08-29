@@ -1127,14 +1127,16 @@
   {
     "date": "2026-08-29",
     "secu": {
-      "count": "30681",
-      "date": "2026-08-29 11:57"
+      "count": "30726",
+      "date": "2026-08-29 19:30"
     },
     "nseu": {
-      "error": "Navigation timeout of 30000 ms exceeded"
+      "count": "24581",
+      "date": "2026년 08월 27일 09시"
     },
     "selu": {
-      "error": "Navigation timeout of 30000 ms exceeded"
+      "count": "53297",
+      "date": "2026년 8월 29일 12시"
     }
   }
 ]
