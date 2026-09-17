@@ -1435,8 +1435,7 @@
       "date": "2026년 09월 16일 16시"
     },
     "selu": {
-      "count": "53077",
-      "date": "2026년 9월 17일 14시"
+      "error": "Navigation timeout of 30000 ms exceeded"
     }
   }
 ]
